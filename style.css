@@ -419,6 +419,7 @@ pre code {
 
 .btn--primary:hover {
   background: var(--color-primary-hover);
+  color: var(--color-text);
 }
 
 .btn--primary:active {
@@ -769,7 +770,7 @@ html {
 }
 
 .header.scrolled {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(10, 30, 40, 0.95);
   box-shadow: var(--shadow-md);
 }
 
@@ -1286,7 +1287,7 @@ section {
 }
 
 .footer__tagline {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(10, 40, 40, 0.8);
   margin-bottom: 0;
 }
 
@@ -1313,7 +1314,7 @@ section {
 }
 
 .footer__section a {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(10, 40, 40, 0.8);
   transition: color var(--duration-fast) var(--ease-standard);
 }
 
@@ -1328,7 +1329,7 @@ section {
 }
 
 .footer__bottom p {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(20, 40, 10, 0.8);
   margin: 0;
 }
 
