@@ -1,14 +1,79 @@
-// Yaam Wai Website JavaScript
+// Yaam Wai - Super Mario Friendship Adventure JavaScript
+
+// Mario Jump Sound Effect (using Web Audio API)
+function playMarioJump() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+}
+
+// Mario Coin Collection Sound
+function playCoinSound() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+}
 
 // DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all functionality
     initNavigation();
     initScrollEffects();
-    initCounters();
+    initMarioAnimations();
     initFormHandling();
-    initAnimations();
+    initInteractions();
 });
+
+// Mario Jump Animation
+function initMarioAnimations() {
+    // Add bounce animation to buttons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            if (e.target.textContent.includes('GOOOO')) {
+                playMarioJump();
+            }
+            
+            // Create jump effect
+            const jump = document.createElement('div');
+            jump.style.cssText = `
+                position: absolute;
+                left: ${e.clientX}px;
+                top: ${e.clientY}px;
+                pointer-events: none;
+                font-size: 20px;
+                font-weight: 900;
+                animation: marioJump 0.6s ease-out;
+            `;
+            jump.textContent = '⭐';
+            document.body.appendChild(jump);
+            
+            setTimeout(() => jump.remove(), 600);
+        });
+    });
+}
 
 // Navigation functionality
 function initNavigation() {
@@ -39,12 +104,14 @@ function initNavigation() {
     // Close mobile menu when clicking on links
     navLinks.forEach(link => {
         link.addEventListener('click', function() {
-            navMenu.classList.remove('active');
-            const spans = navToggle.querySelectorAll('span');
-            spans.forEach(span => {
-                span.style.transform = 'none';
-                span.style.opacity = '1';
-            });
+            if (navMenu) navMenu.classList.remove('active');
+            if (navToggle) {
+                const spans = navToggle.querySelectorAll('span');
+                spans.forEach(span => {
+                    span.style.transform = 'none';
+                    span.style.opacity = '1';
+                });
+            }
         });
     });
 
@@ -64,6 +131,7 @@ function initNavigation() {
                     top: targetPosition,
                     behavior: 'smooth'
                 });
+                playMarioJump();
             }
         });
     });
@@ -82,72 +150,7 @@ function initScrollEffects() {
         } else {
             header.classList.remove('scrolled');
         }
-        
-        // Trigger fade-in animations
-        triggerFadeInAnimations();
     });
-}
-
-// Animated counters
-function initCounters() {
-    const counters = document.querySelectorAll('.stat__number');
-    let hasAnimated = false;
-
-    function animateCounters() {
-        if (hasAnimated) return;
-        
-        const firstCounter = counters[0];
-        if (!firstCounter) return;
-        
-        const rect = firstCounter.getBoundingClientRect();
-        const inView = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        if (inView) {
-            hasAnimated = true;
-            
-            counters.forEach(counter => {
-                const target = parseInt(counter.getAttribute('data-count')) || 0;
-                const duration = 2000; // 2 seconds
-                const start = Date.now();
-                const startValue = 0;
-                
-                function updateCounter() {
-                    const now = Date.now();
-                    const progress = Math.min((now - start) / duration, 1);
-                    const easeProgress = easeOutExpo(progress);
-                    const current = Math.floor(startValue + (target - startValue) * easeProgress);
-                    
-                    // Format number with + if it's over 100
-                    if (target >= 100) {
-                        counter.textContent = current + '+';
-                    } else {
-                        counter.textContent = current;
-                    }
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(updateCounter);
-                    } else {
-                        if (target >= 100) {
-                            counter.textContent = target + '+';
-                        } else {
-                            counter.textContent = target;
-                        }
-                    }
-                }
-                
-                requestAnimationFrame(updateCounter);
-            });
-        }
-    }
-    
-    // Easing function for smooth animation
-    function easeOutExpo(t) {
-        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-    }
-    
-    // Check on scroll and initial load
-    window.addEventListener('scroll', animateCounters);
-    animateCounters(); // Check on initial load
 }
 
 // Form handling
@@ -164,15 +167,20 @@ function initFormHandling() {
             // Show loading state
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ LOADING... ⏳';
             
-            // Simulate form submission (replace with actual form handling)
+            // Play coin sound
+            playCoinSound();
+            
+            // Simulate form submission
             setTimeout(() => {
                 // Remove loading state
                 submitBtn.classList.remove('loading');
                 submitBtn.disabled = false;
+                submitBtn.textContent = '🎮 FIRE AWAY 🎮';
                 
                 // Show success message
-                showNotification('Thanks for reaching out! We\'ll get back to you faster than you can say "Yaam Wai"! 🎉', 'success');
+                showNotification('🎉 LEVEL COMPLETE! We got your message! 🎉', 'success');
                 
                 // Reset form
                 contactForm.reset();
@@ -202,7 +210,7 @@ function validateField(e) {
     // Required field validation
     if (field.hasAttribute('required') && !value) {
         isValid = false;
-        errorMessage = 'This field is required';
+        errorMessage = '⚠️ This power-up is needed!';
     }
     
     // Email validation
@@ -210,7 +218,7 @@ function validateField(e) {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(value)) {
             isValid = false;
-            errorMessage = 'Please enter a valid email address';
+            errorMessage = '⚠️ Invalid castle address!';
         }
     }
     
@@ -237,9 +245,10 @@ function showFieldError(field, message) {
     const errorElement = document.createElement('div');
     errorElement.className = 'field-error';
     errorElement.textContent = message;
-    errorElement.style.color = 'var(--color-error)';
-    errorElement.style.fontSize = 'var(--font-size-sm)';
-    errorElement.style.marginTop = 'var(--space-4)';
+    errorElement.style.color = '#FF0000';
+    errorElement.style.fontSize = '12px';
+    errorElement.style.marginTop = '4px';
+    errorElement.style.fontWeight = 'bold';
     
     field.parentNode.appendChild(errorElement);
 }
@@ -261,21 +270,24 @@ function showNotification(message, type = 'info') {
     `;
     
     // Add styles
+    const bgColor = type === 'success' ? '#00A651' : '#0051BA';
     Object.assign(notification.style, {
         position: 'fixed',
-        top: '20px',
+        top: '100px',
         right: '20px',
-        background: type === 'success' ? 'var(--color-success)' : 'var(--color-info)',
+        background: bgColor,
         color: 'white',
-        padding: 'var(--space-16)',
-        borderRadius: 'var(--radius-base)',
-        boxShadow: 'var(--shadow-lg)',
+        padding: '20px',
+        borderRadius: '4px',
+        border: '3px solid #000',
+        boxShadow: 'inset -3px -3px 0 rgba(0,0,0,0.3), 6px 6px 0 rgba(0,0,0,0.5)',
         zIndex: '10000',
         maxWidth: '400px',
         transform: 'translateX(100%)',
-        transition: 'transform var(--duration-normal) var(--ease-standard)',
-        fontSize: 'var(--font-size-base)',
-        lineHeight: '1.5'
+        transition: 'transform 300ms ease',
+        fontSize: '14px',
+        lineHeight: '1.5',
+        fontWeight: '700'
     });
     
     // Style notification content
@@ -284,7 +296,7 @@ function showNotification(message, type = 'info') {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 'var(--space-12)'
+        gap: '12px'
     });
     
     // Style close button
@@ -296,7 +308,8 @@ function showNotification(message, type = 'info') {
         fontSize: '20px',
         cursor: 'pointer',
         padding: '0',
-        lineHeight: '1'
+        lineHeight: '1',
+        fontWeight: 'bold'
     });
     
     // Add to DOM
@@ -325,201 +338,116 @@ function closeNotification(notification) {
     }, 300);
 }
 
-// Fade-in animations
-function initAnimations() {
-    const animatedElements = document.querySelectorAll('.about__card, .focus__card, .resource__card, .involvement__card, .testimonial__card');
-    
-    // Add fade-in class to elements
-    animatedElements.forEach(element => {
-        element.classList.add('fade-in');
-    });
-    
-    // Trigger initial animation check
-    triggerFadeInAnimations();
-}
-
-function triggerFadeInAnimations() {
-    const fadeElements = document.querySelectorAll('.fade-in:not(.visible)');
-    
-    fadeElements.forEach(element => {
-        const rect = element.getBoundingClientRect();
-        const inView = rect.top < window.innerHeight - 100 && rect.bottom > 100;
-        
-        if (inView) {
-            element.classList.add('visible');
-        }
-    });
-}
-
-// Button interactions
-document.addEventListener('click', function(e) {
-    // Handle all button clicks with witty responses
-    if (e.target.matches('.btn--secondary') || e.target.matches('.btn--outline')) {
-        const buttonText = e.target.textContent.trim();
-        let message = '';
-        
-        switch (buttonText) {
-            case 'Explore Careers':
-                message = 'Career hub coming soon! Meanwhile, have you considered professional coffee taster? ☕';
-                break;
-            case 'Access Library':
-                message = 'Knowledge bank loading... Fun fact: We have more resources than excuses! 📚';
-                break;
-            case 'Get Support':
-                message = 'Support network activated! Remember, asking for help is a superpower! 🦸‍♀️';
-                break;
-            case 'View Events':
-                message = 'Event calendar coming up! Spoiler alert: They\'re all awesome! 🎉';
-                break;
-            case 'Count Me In!':
-                message = 'Awesome! Welcome to the coolest group that actually does cool things! 🎊';
-                break;
-            case 'I Want to Help':
-                message = 'You\'re already helping by being awesome! Let\'s chat about making it official! 💪';
-                break;
-            case 'Tell Me More':
-                message = 'Every donation helps us help others. It\'s like karma, but with receipts! 💝';
-                break;
-            case 'I\'m Convinced!':
-                message = 'That was easy! Spread the word like it\'s good news (because it is)! 📢';
-                break;
-            default:
-                return;
-        }
-        
-        if (message) {
-            e.preventDefault();
-            showNotification(message, 'info');
-        }
-    }
-});
-
-// Easter eggs and fun interactions
-let clickCount = 0;
-document.querySelector('.nav__logo').addEventListener('click', function() {
-    clickCount++;
-    if (clickCount === 5) {
-        showNotification('🎉 You found the secret! You\'re officially part of the inner circle now!', 'success');
-        clickCount = 0;
-    }
-});
-
-// Konami code easter egg
-let konamiCode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
-let konamiIndex = 0;
-
-document.addEventListener('keydown', function(e) {
-    if (e.keyCode === konamiCode[konamiIndex]) {
-        konamiIndex++;
-        if (konamiIndex === konamiCode.length) {
-            showNotification('🎮 Konami code activated! You\'re now a Yaam Wai legend!', 'success');
-            konamiIndex = 0;
+// Interactive button effects
+function initInteractions() {
+    // Coin collection animation on button clicks
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn')) {
+            playCoinSound();
             
-            // Add some fun visual effect
-            document.body.style.animation = 'rainbow 2s ease-in-out';
-            setTimeout(() => {
-                document.body.style.animation = '';
-            }, 2000);
+            // Create floating coin effect
+            for (let i = 0; i < 3; i++) {
+                const coin = document.createElement('div');
+                coin.style.cssText = `
+                    position: fixed;
+                    left: ${e.clientX + (Math.random() * 40 - 20)}px;
+                    top: ${e.clientY}px;
+                    pointer-events: none;
+                    font-size: 24px;
+                    animation: coinFall 1s ease-out;
+                    z-index: 9999;
+                `;
+                coin.textContent = '💰';
+                document.body.appendChild(coin);
+                
+                setTimeout(() => coin.remove(), 1000);
+            }
         }
-    } else {
-        konamiIndex = 0;
+    });
+    
+    // Add fun easter eggs
+    let clickCount = 0;
+    const logo = document.querySelector('.nav__logo');
+    if (logo) {
+        logo.addEventListener('click', function() {
+            clickCount++;
+            if (clickCount === 5) {
+                showNotification('🎮 SECRET LEVEL UNLOCKED! You\'re a Mario Legend! 🎮', 'success');
+                document.body.style.filter = 'hue-rotate(90deg)';
+                setTimeout(() => {
+                    document.body.style.filter = 'none';
+                }, 2000);
+                clickCount = 0;
+            }
+        });
     }
-});
+}
 
-// Add rainbow animation for easter egg
+// Add animations to stylesheet
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes rainbow {
-        0% { filter: hue-rotate(0deg); }
-        25% { filter: hue-rotate(90deg); }
-        50% { filter: hue-rotate(180deg); }
-        75% { filter: hue-rotate(270deg); }
-        100% { filter: hue-rotate(360deg); }
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
     
-    .field-error {
-        animation: shake 0.3s ease-in-out;
+    @keyframes marioJump {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        50% {
+            opacity: 1;
+            transform: translateY(-50px) scale(1.2);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-100px) scale(0.5);
+        }
     }
     
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
+    @keyframes coinFall {
+        0% {
+            opacity: 1;
+            transform: translateY(0) rotateZ(0deg) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(60px) rotateZ(360deg) scale(0.5);
+        }
+    }
+    
+    @keyframes powerUpPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    
+    .btn {
+        animation: powerUpPulse 2s ease-in-out infinite;
+    }
+    
+    .btn:hover {
+        animation: none;
     }
 `;
 document.head.appendChild(style);
 
-// Performance optimization: Throttle scroll events
-let ticking = false;
-
-function throttledScrollHandler() {
-    if (!ticking) {
-        requestAnimationFrame(function() {
-            // Your scroll handling code here
-            ticking = false;
-        });
-        ticking = true;
-    }
-}
-
-// Add some loading states for better UX
-window.addEventListener('load', function() {
-    document.body.classList.add('loaded');
-    
-    // Fade in the hero section
-    const hero = document.querySelector('.hero');
-    if (hero) {
-        hero.style.opacity = '0';
-        hero.style.transform = 'translateY(20px)';
-        hero.style.transition = 'all 1s ease-out';
-        
-        setTimeout(() => {
-            hero.style.opacity = '1';
-            hero.style.transform = 'translateY(0)';
-        }, 100);
-    }
-});
-
-// Accessibility improvements
-document.addEventListener('keydown', function(e) {
-    // Skip to main content functionality
-    if (e.key === 'Tab' && !document.querySelector('.skip-link')) {
-        const skipLink = document.createElement('a');
-        skipLink.href = '#home';
-        skipLink.className = 'skip-link sr-only';
-        skipLink.textContent = 'Skip to main content';
-        skipLink.style.position = 'absolute';
-        skipLink.style.top = '0';
-        skipLink.style.left = '0';
-        skipLink.style.zIndex = '9999';
-        
-        skipLink.addEventListener('focus', function() {
-            this.style.position = 'static';
-            this.classList.remove('sr-only');
-        });
-        
-        skipLink.addEventListener('blur', function() {
-            this.style.position = 'absolute';
-            this.classList.add('sr-only');
-        });
-        
-        document.body.insertBefore(skipLink, document.body.firstChild);
-    }
-});
-
-// Console easter egg for developers
+// Console easter egg
 console.log(`
-🎉 Welcome to Yaam Wai's website!
-    
-    ██╗   ██╗ █████╗  █████╗ ███╗   ███╗    ██╗    ██╗ █████╗ ██╗
-    ╚██╗ ██╔╝██╔══██╗██╔══██╗████╗ ████║    ██║    ██║██╔══██╗██║
-     ╚████╔╝ ███████║███████║██╔████╔██║    ██║ █╗ ██║███████║██║
-      ╚██╔╝  ██╔══██║██╔══██║██║╚██╔╝██║    ██║███╗██║██╔══██║██║
-       ██║   ██║  ██║██║  ██║██║ ╚═╝ ██║    ╚███╔███╔╝██║  ██║██║
-       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝     ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝
+🍄 WELCOME TO THE YAAM WAI FRIENDSHIP KINGDOM! 🍄
 
-Made with ❤️ and probably too much coffee
-Want to join our dev team? Contact us at contact@yaamwai.in
+   ╔═══════════════════════════════════════╗
+   ║  LEVEL 1: MAKE A FRIEND               ║
+   ║  LEVEL 2: HELP ANOTHER FRIEND         ║
+   ║  LEVEL 3: BUILD YOUR SQUAD            ║
+   ║  BOSS LEVEL: SAVE THE WORLD           ║
+   ║                                       ║
+   ║  STATUS: LEGENDARY ADVENTURE          ║
+   ║  DIFFICULTY: MAXIMUM FUN              ║
+   ╚═══════════════════════════════════════╝
+
+"It's dangerous to go alone..." - But you don't have to!
+Join Yaam Wai and find your forever squad.
+
+Made with ❤️ and 🍄 by legends who believe in friendship!
 `);
-
-console.log('🔍 Developer tip: Try clicking the logo 5 times or use the Konami code!');
