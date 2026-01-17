@@ -54,7 +54,8 @@ function initNavigation() {
             e.preventDefault();
             const targetId = this.getAttribute('href');
             const targetSection = document.querySelector(targetId);
-            
+            if (targetId.includes('.html') )
+                window.location.href = targetId;
             if (targetSection) {
                 const headerHeight = document.querySelector('.header').offsetHeight;
                 const targetPosition = targetSection.offsetTop - headerHeight;
